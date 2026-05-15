@@ -107,7 +107,7 @@ venv\Scripts\python.exe -m legal_rag.cli doctor
 For local-model runs on WSL Ubuntu:
 
 ```bash
-cd /mnt/f/paralegal
+cd ~/paralegal
 bash scripts/setup_wsl_local.sh
 source localenv/bin/activate
 ollama pull qwen3:4b-instruct
