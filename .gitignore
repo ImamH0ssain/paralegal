@@ -1,0 +1,56 @@
+# Secrets and local environment
+.env
+.env.*
+!.env.example
+
+# Virtual environments
+venv/
+localenv/
+.venv/
+.venv-wsl/
+
+# Python caches and test output
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.pytest_tmp*/
+.mypy_cache/
+.ruff_cache/
+
+# App/runtime logs
+*.log
+*.aux
+*.out
+*.toc
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+*.xdv
+.streamlit/
+.streamlit-logs/
+
+# Generated runtime data
+data/
+evidence_index/
+sample_inputs/
+
+# Local model and package caches
+.cache/
+models/
+*.safetensors
+*.gguf
+*.pt
+*.pth
+*.onnx
+
+# Local screenshots, recordings, and private prompt material
+image.png
+*.webm
+AI Engineer - Assessment.pdf
+
+# OS/editor files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

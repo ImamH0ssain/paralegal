@@ -1,0 +1,343 @@
+\documentclass[11pt]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{longtable}
+\usepackage{booktabs}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage{fancyhdr}
+\usepackage{array}
+
+\definecolor{heading}{HTML}{1F2937}
+\definecolor{linkblue}{HTML}{2563EB}
+\definecolor{lightgray}{HTML}{F3F4F6}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=linkblue,
+  urlcolor=linkblue,
+  pdftitle={Paralegal: Grounded Legal Memo RAG Technical Report},
+  pdfauthor={Paralegal}
+}
+
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{Paralegal}
+\rhead{Technical Report}
+\cfoot{\thepage}
+
+\titleformat{\section}{\Large\bfseries\color{heading}}{\thesection}{0.75em}{}
+\titleformat{\subsection}{\large\bfseries\color{heading}}{\thesubsection}{0.75em}{}
+\setlist[itemize]{leftmargin=1.3em, itemsep=0.2em}
+\setlist[enumerate]{leftmargin=1.5em, itemsep=0.2em}
+\renewcommand{\arraystretch}{1.18}
+\newcommand{\code}[1]{\texttt{#1}}
+
+\title{\textbf{Paralegal: Grounded Legal Memo RAG}\\Technical Report}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+
+\noindent Paralegal is a compact document-understanding and retrieval-augmented drafting system for legal and regulatory materials. It turns messy source files into inspectable evidence, uses that evidence to draft a cited legal memo, and records operator edits so later drafts can reflect recurring preferences.
+
+\medskip
+\noindent The main design goal is simple: every useful statement in the draft should be traceable back to source material. When the system cannot support a fact, it should make that uncertainty visible instead of filling the gap with fluent but unsupported text.
+
+\section{Scope}
+
+The project focuses on one end-to-end workflow:
+
+\begin{enumerate}
+  \item Ingest legal-style documents.
+  \item Extract text, layout-aware blocks, warnings, and structured fields.
+  \item Build a searchable evidence index.
+  \item Retrieve passages for a drafting task.
+  \item Generate a cited memo draft.
+  \item Validate that draft against the retrieved evidence.
+  \item Save operator edits and convert them into reusable drafting preferences.
+  \item Run a small evaluation suite that makes the behavior inspectable.
+\end{enumerate}
+
+The chosen output is a cited legal memo draft with sections for parties and documents, timeline, key facts, document issues, open questions, and evidence used.
+
+\section{Coverage Matrix}
+
+\begin{longtable}{>{\raggedright\arraybackslash}p{0.25\linewidth} >{\raggedright\arraybackslash}p{0.68\linewidth}}
+\toprule
+\textbf{Area} & \textbf{Where it is handled} \\
+\midrule
+Document processing & \code{legal\_rag.ingestion} extracts native text, routes OCR, records confidence and warnings, and writes normalized evidence blocks plus structured fields. \\
+Retrieval and grounding & \code{legal\_rag.retrieval} builds sparse and vector indexes, fuses rankings, optionally reranks, and returns inspectable evidence ids. \\
+Draft generation & \code{legal\_rag.generation} drafts a cited memo from retrieved evidence, sanitizes citations, validates grounding, and falls back safely when needed. \\
+Improvement from edits & \code{legal\_rag.feedback} stores operator edits, classifies reusable changes, aggregates learned patterns, and feeds them into later drafts. \\
+Code quality and design & The code is split into small modules for ingestion, retrieval, generation, feedback, providers, evaluation, and UI. Public functions and data models have docstrings. \\
+Documentation and clarity & \code{README.md}, \code{docs/developer-guide.md}, this report, sample outputs, screenshots, and tests document how to run and inspect the system. \\
+\bottomrule
+\end{longtable}
+
+\section{Document Processing}
+
+The ingestion layer accepts PDFs, text, markdown, PNG, JPG, and JPEG files. Clean PDFs are handled with native PDF text extraction first because that path is faster, cheaper, and often more accurate than OCR. Scanned or image-heavy files can route through OCR.
+
+The implemented OCR options are:
+
+\begin{itemize}
+  \item Mistral OCR when \code{MISTRAL\_API\_KEY} is configured.
+  \item Local Docling OCR/layout parsing through \code{--ocr-backend docling}.
+  \item A safe low-confidence fallback record when image OCR is not available.
+\end{itemize}
+
+Each extracted block is normalized into a \code{DocumentBlock} with:
+
+\begin{itemize}
+  \item \code{doc\_id}
+  \item \code{source\_file}
+  \item \code{page}
+  \item \code{block\_index}
+  \item \code{text}
+  \item \code{confidence}
+  \item \code{warnings}
+  \item \code{extraction\_method}
+  \item a stable citation id such as \code{DOC2:p6:b1}
+\end{itemize}
+
+That block format is the core contract between ingestion, retrieval, generation, UI evidence inspection, and evaluation. The system also writes document summaries with structured fields for parties, dates, addresses, amounts, signatures, deadlines, and unclear spans.
+
+The processing layer is deliberately conservative. If OCR fails, if a page has no native text, or if text quality looks poor, the warning follows the block into downstream outputs. That makes extraction risk visible to the draft generator and to the operator.
+
+\section{Retrieval and Grounding}
+
+Retrieval is local and inspectable. The index uses SQLite FTS5 for sparse keyword matching, a vector store for semantic search, reciprocal-rank fusion to combine both rankings, and an optional local cross-encoder reranker.
+
+The default retrieval flow is:
+
+\begin{enumerate}
+  \item Expand the query with small legal-domain synonym sets.
+  \item Search SQLite FTS5 with BM25-style ranking.
+  \item Search the vector index with the configured embedding provider.
+  \item Combine sparse and dense results with reciprocal-rank fusion.
+  \item Optionally rerank top candidates with \code{BAAI/bge-reranker-base}.
+  \item Return evidence chunks with exact citation ids and source metadata.
+\end{enumerate}
+
+Embedding options are:
+
+\begin{itemize}
+  \item OpenAI embeddings when configured.
+  \item Local \code{Qwen/Qwen3-Embedding-0.6B} through Sentence Transformers.
+  \item Deterministic hashing embeddings for no-key tests and offline baseline runs.
+\end{itemize}
+
+The important product behavior is not just finding relevant text. The system returns an evidence bundle that can be inspected in the UI and written to \code{sample\_outputs/evidence\_map.json}. Generated citations are then checked against that bundle.
+
+\section{Draft Generation}
+
+Generation is evidence-first. The generator retrieves evidence, adds useful structured-field support chunks, loads any learned edit preferences, and then drafts the memo through one of three paths:
+
+\begin{itemize}
+  \item OpenAI, when explicitly enabled and configured.
+  \item Local Ollama, when \code{--use-ollama} is set.
+  \item A deterministic offline generator when no model is available or a model result fails grounding checks.
+\end{itemize}
+
+The model prompt tells the generator to use only the provided evidence ids. After generation, the system sanitizes common citation mistakes, removes weakly supported lines, and validates the final memo.
+
+Validation checks:
+
+\begin{itemize}
+  \item every citation id appears in the retrieved evidence bundle,
+  \item factual bullets carry citations,
+  \item required memo sections are present,
+  \item the draft does not look truncated,
+  \item cited factual lines have enough lexical overlap with their cited evidence.
+\end{itemize}
+
+This is intentionally stricter than a typical demo prompt. The draft should degrade into open questions or a deterministic fallback before it presents unsupported claims as facts.
+
+\section{Improvement from Operator Edits}
+
+The edit loop is designed to learn reusable drafting behavior, not just store two versions of a memo.
+
+When an operator saves an edit, the system stores:
+
+\begin{itemize}
+  \item the original draft,
+  \item the edited draft,
+  \item the visible evidence ids,
+  \item the task type,
+  \item a timestamp,
+  \item a structured edit analysis.
+\end{itemize}
+
+If OpenAI is available, the edit classifier asks for structured reusable patterns. Otherwise, a heuristic classifier looks for common signals such as removed uncited claims, added cited facts, stronger citation density, tighter prose, or new open questions.
+
+The aggregate file \code{data/feedback/learned\_patterns.json} keeps a compact list of learned patterns and recent before/after examples. Future drafts load that summary as prompt context. In the current sample run, the simulated edit teaches the system to carry operator-added cited facts into future drafts when similar evidence appears.
+
+\section{UI}
+
+The Streamlit UI exposes the workflow in one place:
+
+\begin{itemize}
+  \item choose local or API-backed providers,
+  \item download public samples or upload documents,
+  \item ingest documents,
+  \item build the evidence index,
+  \item generate a memo,
+  \item inspect retrieved evidence,
+  \item edit the memo,
+  \item save feedback,
+  \item run evaluation.
+\end{itemize}
+
+The UI is not meant to be a production frontend. It is a fast way to inspect the pipeline, exercise the grounding loop, and demonstrate how evidence connects to the draft.
+
+\section{Local and API Deployment Modes}
+
+The project supports two practical modes.
+
+\subsection{Local-first mode}
+
+The WSL local stack uses Docling, Qwen embeddings, BGE reranking, and Ollama drafting. This keeps documents on the machine by default. It is the better direction for confidential legal work when hardware is available.
+
+Local CPU inference is slower, especially for OCR and drafting. The WSL runner detects whether PyTorch can safely use CUDA. Unsupported visible GPUs fall back to CPU instead of failing midway through the run.
+
+\subsection{API-backed mode}
+
+The API-backed path can use Mistral OCR, OpenAI embeddings, OpenAI structured extraction, and OpenAI drafting. This improves quality and latency on weaker hardware, but it should be used only when the document handling policy allows external processing.
+
+The provider choice is explicit. API providers are optional and controlled by environment variables and CLI flags.
+
+\section{Sample Inputs and Outputs}
+
+The public sample workflow uses four legal or regulatory inputs:
+
+\begin{longtable}{>{\raggedright\arraybackslash}p{0.44\linewidth} >{\raggedright\arraybackslash}p{0.49\linewidth}}
+\toprule
+\textbf{File} & \textbf{Purpose} \\
+\midrule
+\code{ftc\_chegg\_complaint.pdf} & Regulatory complaint with factual allegations and recurring-charge language. \\
+\code{ftc\_chegg\_stipulated\_order.pdf} & Order document with monetary and injunctive relief language. \\
+\code{doj\_schnitzer\_consent\_decree.pdf} & Consent decree with compliance obligations and notice provisions. \\
+\code{sec\_scanned\_lease\_page\_001.jpg} & Image-only lease exhibit page to exercise OCR-required handling. \\
+\bottomrule
+\end{longtable}
+
+Representative outputs are checked into \code{sample\_outputs/}:
+
+\begin{itemize}
+  \item \code{generated\_memo.md}
+  \item \code{evidence\_map.json}
+  \item \code{evaluation\_report.md}
+  \item \code{evaluation\_report.json}
+\end{itemize}
+
+The generated memo includes citation ids on factual bullets. The evidence map preserves the retrieved source chunks so a user can trace each citation back to the underlying text.
+
+\section{Evaluation Approach}
+
+The evaluation suite is intentionally small and transparent. It is designed to show whether the system is behaving correctly, not to claim broad legal accuracy.
+
+It measures retrieval term recall at 5, source recall at 5, mean reciprocal rank, extracted document and block counts, structured field counts, extraction warnings, citation validity, uncited factual lines, weakly supported cited lines, and edit-learning persistence.
+
+\begin{longtable}{>{\raggedright\arraybackslash}p{0.58\linewidth} >{\raggedleft\arraybackslash}p{0.28\linewidth}}
+\toprule
+\textbf{Area} & \textbf{Result} \\
+\midrule
+Documents processed & 4 \\
+Evidence blocks indexed & 141 \\
+Mean term recall@5 & 0.67 \\
+Mean source recall@5 & 1.00 \\
+Mean reciprocal rank & 0.88 \\
+Extracted parties & 6 \\
+Extracted dates & 19 \\
+Extracted addresses & 9 \\
+Extracted amounts & 11 \\
+Extracted signatures & 9 \\
+Extracted deadlines & 6 \\
+Extraction warnings & 11 \\
+Citation validation & Passed \\
+Invalid citations & 0 \\
+Uncited factual lines & 0 \\
+Weakly supported cited lines & 0 \\
+Stored feedback records & 1 \\
+\bottomrule
+\end{longtable}
+
+The weakest retrieval case is the image-only SEC lease page. Source recall still succeeds, but term recall is lower because OCR quality and scanned-page structure affect which exact terms appear in the extracted chunks. That is the expected failure mode, and it is why extraction warnings and low-confidence records remain visible.
+
+\section{Assumptions}
+
+\begin{itemize}
+  \item Public documents are acceptable for demonstration because they can be inspected without exposing confidential client material.
+  \item Synthetic documents are useful for tests, but public inputs are better for showing real extraction and retrieval behavior.
+  \item Legal correctness is outside the system boundary. The system is evaluated on grounding, traceability, workflow design, and reliability.
+  \item A human operator remains responsible for legal judgment and final edits.
+  \item Fine-tuning is not used. The edit loop uses prompt memory because the amount of feedback data is too small for meaningful model training.
+  \item The Streamlit UI is a demo surface, not an access-controlled production application.
+\end{itemize}
+
+\section{Design Choices}
+
+The implementation favors inspectability over model complexity. SQLite, JSONL, Markdown outputs, and simple provider adapters make it easy to see what happened at each stage. That matters more here than hiding the workflow behind a larger service framework.
+
+The retrieval stack uses hybrid search because legal documents often need exact term matching and semantic recall at the same time. BM25 catches names, dates, statutes, and monetary values. Embeddings help when the query is phrased differently from the source. Reranking is optional because it adds latency and local model dependencies.
+
+The deterministic fallback generator is not as polished as a strong LLM, but it is valuable. It means the pipeline can still produce a grounded, testable output without network access or model availability.
+
+OCR is the biggest quality variable. Local OCR is better for privacy. API OCR is better for quality and speed on weak hardware. The system supports both because the right answer depends on the deployment environment and document sensitivity.
+
+\section{Production Path}
+
+A production version should keep the same core contracts but harden the surrounding system:
+
+\begin{itemize}
+  \item replace Streamlit with an authenticated web application,
+  \item add matter-level permissions and audit logging,
+  \item encrypt stored documents and derived artifacts,
+  \item add retention controls and deletion workflows,
+  \item store evidence, feedback, and evaluations in a database,
+  \item run OCR and embeddings as background jobs,
+  \item add queueing, retries, and observability,
+  \item support document-level access controls during retrieval,
+  \item add stronger claim-level attribution checks,
+  \item expand evaluation sets with real labeled matters,
+  \item require human approval before any draft leaves the workspace.
+\end{itemize}
+
+The current repo is a reference implementation of the workflow. The strongest parts to carry forward are the evidence-id contract, hybrid retrieval, citation validation, and edit-learning loop.
+
+\section{How to Reproduce}
+
+Run the baseline:
+
+\begin{verbatim}
+venv\Scripts\python.exe -m legal_rag.cli all
+\end{verbatim}
+
+Run the tests:
+
+\begin{verbatim}
+venv\Scripts\python.exe -m pytest
+\end{verbatim}
+
+Launch the UI:
+
+\begin{verbatim}
+venv\Scripts\streamlit.exe run app.py
+\end{verbatim}
+
+Run the local WSL stack:
+
+\begin{verbatim}
+bash scripts/run_wsl_local.sh
+\end{verbatim}
+
+\end{document}

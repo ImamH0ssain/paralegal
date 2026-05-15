@@ -1,0 +1,198 @@
+{
+  "draft_grounding": {
+    "citations_used": [
+      "DOC1:p1:b1",
+      "DOC1:p29:b1",
+      "DOC1:p31:b1",
+      "DOC2:p1:b1",
+      "DOC2:p20:b1",
+      "DOC3:p1:b1",
+      "DOC4:p1:b10"
+    ],
+    "invalid_citations": [],
+    "missing_sections": [],
+    "possibly_truncated": false,
+    "uncited_factual_lines": [],
+    "valid": true,
+    "weakly_supported_lines": []
+  },
+  "edit_learning": {
+    "captured": true,
+    "learned_patterns": [
+      {
+        "count": 1,
+        "pattern": "Carry operator-added cited facts into future drafts when similar evidence appears."
+      }
+    ],
+    "stored_feedback_count": 1
+  },
+  "extraction": {
+    "block_count": 141,
+    "document_count": 4,
+    "field_counts": {
+      "addresses": 9,
+      "amounts": 11,
+      "dates": 19,
+      "deadlines": 6,
+      "parties": 6,
+      "signatures": 9,
+      "unclear_spans": 0
+    },
+    "usable_downstream": true,
+    "warning_count": 11
+  },
+  "notes": [
+    "Retrieval metrics are term-based because sample evidence IDs depend on PDF extraction block boundaries.",
+    "Source recall checks whether the expected public document surfaced in the top five.",
+    "The no-key baseline uses deterministic hashing embeddings; local Qwen or OpenAI embeddings improve semantic retrieval when configured."
+  ],
+  "retrieval": {
+    "mean_reciprocal_rank": 0.875,
+    "mean_source_recall_at_5": 1.0,
+    "mean_term_recall_at_5": 0.6708333333333333,
+    "queries": [
+      {
+        "expected_source_files": [
+          "ftc_chegg_complaint.pdf"
+        ],
+        "expected_terms": [
+          "Chegg",
+          "ROSCA",
+          "cancel",
+          "subscribers",
+          "recurring charges"
+        ],
+        "mrr": 1.0,
+        "query": "What defendant and alleged cancellation practices are described in the Chegg complaint?",
+        "retrieved_evidence_ids": [
+          "DOC2:p14:b1",
+          "DOC2:p16:b2",
+          "DOC2:p17:b1",
+          "DOC2:p18:b1",
+          "DOC2:p4:b1"
+        ],
+        "retrieved_source_files": [
+          "ftc_chegg_complaint.pdf",
+          "ftc_chegg_complaint.pdf",
+          "ftc_chegg_complaint.pdf",
+          "ftc_chegg_complaint.pdf",
+          "ftc_chegg_complaint.pdf"
+        ],
+        "source_recall_at_5": 1.0,
+        "term_ranks": {
+          "Chegg": 1,
+          "ROSCA": null,
+          "cancel": 1,
+          "recurring charges": null,
+          "subscribers": 1
+        },
+        "term_recall_at_5": 0.6
+      },
+      {
+        "expected_source_files": [
+          "ftc_chegg_stipulated_order.pdf"
+        ],
+        "expected_terms": [
+          "monetary judgment",
+          "$7,500,000",
+          "injunction",
+          "Chegg"
+        ],
+        "mrr": 1.0,
+        "query": "What monetary judgment and injunctive relief appear in the Chegg stipulated order?",
+        "retrieved_evidence_ids": [
+          "DOC3:p1:b1",
+          "DOC2:p1:b1",
+          "DOC3:p9:b1",
+          "DOC2:p14:b1",
+          "DOC3:p2:b1"
+        ],
+        "retrieved_source_files": [
+          "ftc_chegg_stipulated_order.pdf",
+          "ftc_chegg_complaint.pdf",
+          "ftc_chegg_stipulated_order.pdf",
+          "ftc_chegg_complaint.pdf",
+          "ftc_chegg_stipulated_order.pdf"
+        ],
+        "source_recall_at_5": 1.0,
+        "term_ranks": {
+          "$7,500,000": null,
+          "Chegg": 1,
+          "injunction": 1,
+          "monetary judgment": 1
+        },
+        "term_recall_at_5": 0.75
+      },
+      {
+        "expected_source_files": [
+          "doj_schnitzer_consent_decree.pdf"
+        ],
+        "expected_terms": [
+          "Schnitzer",
+          "scrap metal recycling",
+          "Clean Air Act",
+          "refrigerant",
+          "Facilities"
+        ],
+        "mrr": 1.0,
+        "query": "What facilities and compliance obligations are described in the Schnitzer consent decree?",
+        "retrieved_evidence_ids": [
+          "DOC1:p3:b1",
+          "DOC1:p6:b1",
+          "DOC1:p12:b1",
+          "DOC1:p10:b1",
+          "DOC1:p9:b1"
+        ],
+        "retrieved_source_files": [
+          "doj_schnitzer_consent_decree.pdf",
+          "doj_schnitzer_consent_decree.pdf",
+          "doj_schnitzer_consent_decree.pdf",
+          "doj_schnitzer_consent_decree.pdf",
+          "doj_schnitzer_consent_decree.pdf"
+        ],
+        "source_recall_at_5": 1.0,
+        "term_ranks": {
+          "Clean Air Act": 1,
+          "Facilities": 1,
+          "Schnitzer": 1,
+          "refrigerant": 1,
+          "scrap metal recycling": 1
+        },
+        "term_recall_at_5": 1.0
+      },
+      {
+        "expected_source_files": [
+          "sec_scanned_lease_page_001.jpg"
+        ],
+        "expected_terms": [
+          "Lease",
+          "Lessor",
+          "Lessee"
+        ],
+        "mrr": 0.5,
+        "query": "What lease exhibit terms were extracted from the scanned SEC image?",
+        "retrieved_evidence_ids": [
+          "DOC4:p1:b17",
+          "DOC4:p1:b9",
+          "DOC4:p1:b1",
+          "DOC1:p7:b1",
+          "DOC1:p6:b1"
+        ],
+        "retrieved_source_files": [
+          "sec_scanned_lease_page_001.jpg",
+          "sec_scanned_lease_page_001.jpg",
+          "sec_scanned_lease_page_001.jpg",
+          "doj_schnitzer_consent_decree.pdf",
+          "doj_schnitzer_consent_decree.pdf"
+        ],
+        "source_recall_at_5": 1.0,
+        "term_ranks": {
+          "Lease": null,
+          "Lessee": 2,
+          "Lessor": null
+        },
+        "term_recall_at_5": 0.3333333333333333
+      }
+    ]
+  }
+}
