@@ -113,7 +113,11 @@ source localenv/bin/activate
 ollama pull qwen3:4b-instruct
 bash scripts/run_wsl_local.sh
 ```
+In a seperate terminal:
 
+```bash
+ollama serve
+```
 Launch the UI from WSL:
 
 ```bash
