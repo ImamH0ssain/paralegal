@@ -2,20 +2,20 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from legal_rag.feedback import classify_edit
-from legal_rag.generation import (
+from paralegal.feedback import classify_edit
+from paralegal.generation import (
     _generate_with_llm,
     _prune_weakly_supported_lines,
     _select_llm_evidence,
     generate_memo,
     validate_memo_citations,
 )
-from legal_rag.ingestion import ingest_paths
-from legal_rag.models import EvidenceChunk
-from legal_rag.providers import OllamaClient
-from legal_rag.retrieval import EvidenceIndex
-from legal_rag.sample_data import create_sample_inputs
-from legal_rag.text_utils import extract_citations
+from paralegal.ingestion import ingest_paths
+from paralegal.models import EvidenceChunk
+from paralegal.providers import OllamaClient
+from paralegal.retrieval import EvidenceIndex
+from paralegal.sample_data import create_sample_inputs
+from paralegal.text_utils import extract_citations
 
 
 def test_extract_citations() -> None:

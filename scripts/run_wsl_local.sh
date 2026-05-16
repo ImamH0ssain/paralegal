@@ -15,7 +15,7 @@ export TRANSFORMERS_CACHE="${TRANSFORMERS_CACHE:-/mnt/f/paralegal/.cache/hugging
 export TORCH_HOME="${TORCH_HOME:-/mnt/f/paralegal/.cache/torch}"
 export LOCAL_ACCELERATOR="${LOCAL_ACCELERATOR:-auto}"
 export LOCAL_CUDA_MIN_CAPABILITY="${LOCAL_CUDA_MIN_CAPABILITY:-75}"
-eval "$(python -m legal_rag.local_device)"
+eval "$(python -m paralegal.local_device)"
 export OLLAMA_MODEL="${OLLAMA_MODEL:-qwen3:4b-instruct}"
 export OLLAMA_TIMEOUT="${OLLAMA_TIMEOUT:-900}"
 export OLLAMA_STREAM="${OLLAMA_STREAM:-true}"
@@ -36,7 +36,7 @@ export LOCAL_RERANK_WEIGHT="${LOCAL_RERANK_WEIGHT:-0.25}"
 export LOCAL_RERANK_PROTECT_TOP="${LOCAL_RERANK_PROTECT_TOP:-2}"
 export INGEST_WORKERS="${INGEST_WORKERS:-1}"
 
-python -m legal_rag.cli all \
+paralegal all \
   --ocr-backend docling \
   --embedding-backend local \
   --reranker-backend local \

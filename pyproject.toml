@@ -1,5 +1,5 @@
 [project]
-name = "grounded-legal-memo-rag"
+name = "paralegal"
 version = "0.1.0"
 description = "Document understanding, grounded retrieval, legal memo drafting, and edit-learning demo."
 requires-python = ">=3.12"
@@ -11,6 +11,16 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = ["pytest>=8.3.0,<9.0.0"]
+
+[project.scripts]
+paralegal = "paralegal.cli:main"
+
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["paralegal*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

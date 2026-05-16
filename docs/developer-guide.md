@@ -16,18 +16,18 @@ This guide documents the code layout and runtime boundaries for Paralegal.
 | Module | Responsibility |
 | --- | --- |
 | `app.py` | Streamlit UI for document preparation, indexing, drafting, evidence review, feedback, and evaluation. |
-| `legal_rag.cli` | Command-line orchestration for individual stages and the complete `all` workflow. |
-| `legal_rag.ingestion` | Native PDF extraction, OCR routing, text normalization, extraction caching, and structured fields. |
-| `legal_rag.retrieval` | SQLite FTS5, embedding cache, vector search, reciprocal-rank fusion, and optional reranking. |
-| `legal_rag.generation` | Evidence selection, memo drafting, local/API model routing, citation sanitization, and validation. |
-| `legal_rag.feedback` | Operator edit storage, edit classification, learned pattern aggregation, and prompt-memory loading. |
-| `legal_rag.evaluation` | Retrieval, extraction, citation-grounding, and edit-learning report generation. |
-| `legal_rag.providers` | OpenAI, Ollama, Mistral OCR, embedding, and reranker adapters. |
-| `legal_rag.local_device` | CPU/CUDA selection for WSL local model runs. |
-| `legal_rag.models` | Shared `DocumentBlock` and `EvidenceChunk` data models. |
-| `legal_rag.real_data` | Public sample document download manifest and ground-truth queries. |
-| `legal_rag.sample_data` | Synthetic legal-style PDF generation for offline runs and tests. |
-| `legal_rag.text_utils` | Tokenization, citation extraction, sentence splitting, and lightweight text scoring. |
+| `paralegal.cli` | Command-line orchestration for individual stages and the complete `all` workflow. |
+| `paralegal.ingestion` | Native PDF extraction, OCR routing, text normalization, extraction caching, and structured fields. |
+| `paralegal.retrieval` | SQLite FTS5, embedding cache, vector search, reciprocal-rank fusion, and optional reranking. |
+| `paralegal.generation` | Evidence selection, memo drafting, local/API model routing, citation sanitization, and validation. |
+| `paralegal.feedback` | Operator edit storage, edit classification, learned pattern aggregation, and prompt-memory loading. |
+| `paralegal.evaluation` | Retrieval, extraction, citation-grounding, and edit-learning report generation. |
+| `paralegal.providers` | OpenAI, Ollama, Mistral OCR, embedding, and reranker adapters. |
+| `paralegal.local_device` | CPU/CUDA selection for WSL local model runs. |
+| `paralegal.models` | Shared `DocumentBlock` and `EvidenceChunk` data models. |
+| `paralegal.real_data` | Public sample document download manifest and ground-truth queries. |
+| `paralegal.sample_data` | Synthetic legal-style PDF generation for offline runs and tests. |
+| `paralegal.text_utils` | Tokenization, citation extraction, sentence splitting, and lightweight text scoring. |
 
 ## Data Boundaries
 
@@ -63,7 +63,7 @@ Memo generation is constrained by these invariants:
 
 ## Local Hardware Policy
 
-`scripts/run_wsl_local.sh` calls `python -m legal_rag.local_device` before running local OCR, embedding, and reranking workloads. Auto mode enables CUDA only when PyTorch reports a supported GPU at or above `LOCAL_CUDA_MIN_CAPABILITY`. Unsupported visible GPUs are hidden from PyTorch workloads by setting `CUDA_VISIBLE_DEVICES=""`.
+`scripts/run_wsl_local.sh` calls `python -m paralegal.local_device` before running local OCR, embedding, and reranking workloads. Auto mode enables CUDA only when PyTorch reports a supported GPU at or above `LOCAL_CUDA_MIN_CAPABILITY`. Unsupported visible GPUs are hidden from PyTorch workloads by setting `CUDA_VISIBLE_DEVICES=""`.
 
 Override options:
 
@@ -85,7 +85,7 @@ venv\Scripts\python.exe -m pytest
 Run the end-to-end local baseline:
 
 ```powershell
-venv\Scripts\python.exe -m legal_rag.cli all
+venv\Scripts\paralegal.exe all
 ```
 
 Run the WSL local-model stack:

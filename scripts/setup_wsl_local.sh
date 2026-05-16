@@ -11,6 +11,7 @@ source "$VENV_DIR/bin/activate"
 
 python -m pip install --upgrade pip setuptools wheel
 python -m pip install -r requirements-local.txt
+python -m pip install -e .
 
 cat <<'MSG'
 
@@ -44,7 +45,7 @@ Recommended local run:
   export LOCAL_RERANK_WEIGHT=0.25
   export LOCAL_RERANK_PROTECT_TOP=2
   export INGEST_WORKERS=1
-  python -m legal_rag.cli all --ocr-backend docling --embedding-backend local --reranker-backend local --use-ollama
+  paralegal all --ocr-backend docling --embedding-backend local --reranker-backend local --use-ollama
 
 The runner auto-selects CUDA only when PyTorch sees a GPU with compute capability >= sm_75.
 Set LOCAL_ACCELERATOR=cpu to force the laptop-safe CPU path, or LOCAL_ACCELERATOR=cuda to force GPU.

@@ -6,15 +6,15 @@ from pathlib import Path
 
 import streamlit as st
 
-from legal_rag.evaluation import run_evaluation
-from legal_rag.feedback import save_operator_feedback
-from legal_rag.generation import DEFAULT_MEMO_QUERY, generate_memo
-from legal_rag.ingestion import ingest_paths
-from legal_rag.providers import OpenAIClient, make_embedding_provider, make_reranker
-from legal_rag.real_data import download_real_inputs
-from legal_rag.retrieval import EvidenceIndex
-from legal_rag.sample_data import create_sample_inputs
-from legal_rag.io_utils import read_json
+from paralegal.evaluation import run_evaluation
+from paralegal.feedback import save_operator_feedback
+from paralegal.generation import DEFAULT_MEMO_QUERY, generate_memo
+from paralegal.ingestion import ingest_paths
+from paralegal.providers import OpenAIClient, make_embedding_provider, make_reranker
+from paralegal.real_data import download_real_inputs
+from paralegal.retrieval import EvidenceIndex
+from paralegal.sample_data import create_sample_inputs
+from paralegal.io_utils import read_json
 
 
 ROOT = Path(__file__).parent
@@ -43,8 +43,8 @@ def available_inputs() -> list[Path]:
     return inputs
 
 
-st.set_page_config(page_title="Grounded Legal Memo RAG", layout="wide")
-st.title("Grounded Legal Memo RAG")
+st.set_page_config(page_title="Paralegal: Grounded Legal Memo RAG", layout="wide")
+st.title("Paralegal: Grounded Legal Memo RAG")
 
 with st.sidebar:
     st.header("Workflow")

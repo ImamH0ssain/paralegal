@@ -107,7 +107,7 @@ def download_real_inputs(output_dir: str | Path, *, overwrite: bool = False) -> 
 
 def _download(url: str, path: Path) -> None:
     headers = {
-        "User-Agent": "grounded-legal-memo-rag/0.1 contact: local-assessment",
+        "User-Agent": "paralegal/0.1 contact: local-demo",
         "Accept": "application/pdf,image/*,*/*",
     }
     req = urllib.request.Request(url, headers=headers)

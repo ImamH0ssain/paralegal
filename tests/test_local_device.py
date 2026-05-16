@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from legal_rag.local_device import CudaInfo, resolve_local_devices, shell_exports
+from paralegal.local_device import CudaInfo, resolve_local_devices, shell_exports
 
 
 def test_auto_uses_cpu_for_unsupported_older_cuda_capability() -> None:

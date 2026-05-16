@@ -72,12 +72,13 @@ Create a virtual environment and install dependencies:
 ```powershell
 python -m venv venv
 venv\Scripts\python.exe -m pip install -r requirements.txt
+venv\Scripts\python.exe -m pip install -e .
 ```
 
 Run the complete pipeline with public sample documents:
 
 ```powershell
-venv\Scripts\python.exe -m legal_rag.cli all
+venv\Scripts\paralegal.exe all
 ```
 
 Open the UI:
@@ -99,10 +100,10 @@ Generated artifacts are written to:
 Check the local environment:
 
 ```powershell
-venv\Scripts\python.exe -m legal_rag.cli doctor
+venv\Scripts\paralegal.exe doctor
 ```
 
-## Local WSL Mode
+## Linux / WSL Local Mode
 
 For local-model runs on WSL Ubuntu:
 
@@ -113,7 +114,8 @@ source localenv/bin/activate
 ollama pull qwen3:4b-instruct
 bash scripts/run_wsl_local.sh
 ```
-In a seperate terminal:
+
+In a separate terminal:
 
 ```bash
 ollama serve
@@ -164,23 +166,23 @@ External services are optional. Without keys, the project uses local extraction,
 Download or create inputs:
 
 ```powershell
-venv\Scripts\python.exe -m legal_rag.cli download-real --out sample_inputs
-venv\Scripts\python.exe -m legal_rag.cli make-samples --out sample_inputs
+venv\Scripts\paralegal.exe download-real --out sample_inputs
+venv\Scripts\paralegal.exe make-samples --out sample_inputs
 ```
 
 Run each stage separately:
 
 ```powershell
-venv\Scripts\python.exe -m legal_rag.cli ingest sample_inputs --out data/processed
-venv\Scripts\python.exe -m legal_rag.cli index --processed data/processed/processed_documents.jsonl --index evidence_index
-venv\Scripts\python.exe -m legal_rag.cli draft --index evidence_index --processed data/processed --feedback data/feedback --out sample_outputs
-venv\Scripts\python.exe -m legal_rag.cli evaluate --index evidence_index --processed data/processed --truth sample_inputs/sample_ground_truth.json --feedback data/feedback --out sample_outputs
+venv\Scripts\paralegal.exe ingest sample_inputs --out data/processed
+venv\Scripts\paralegal.exe index --processed data/processed/processed_documents.jsonl --index evidence_index
+venv\Scripts\paralegal.exe draft --index evidence_index --processed data/processed --feedback data/feedback --out sample_outputs
+venv\Scripts\paralegal.exe evaluate --index evidence_index --processed data/processed --truth sample_inputs/sample_ground_truth.json --feedback data/feedback --out sample_outputs
 ```
 
 Run the local-model stack from an activated WSL environment:
 
 ```bash
-python -m legal_rag.cli all \
+paralegal all \
   --ocr-backend docling \
   --embedding-backend local \
   --reranker-backend local \
@@ -245,7 +247,7 @@ For production legal workflows, treat this project as a reference implementation
 
 ```text
 app.py                         Streamlit UI
-legal_rag/
+paralegal/
   cli.py                       Command-line entry point
   ingestion.py                 Document extraction and OCR orchestration
   retrieval.py                 SQLite FTS5, embeddings, RRF, reranking

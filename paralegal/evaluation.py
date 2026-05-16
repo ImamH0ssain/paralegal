@@ -45,7 +45,7 @@ def run_evaluation(
             use_ollama=use_ollama,
             reranker=reranker,
         )
-    with TemporaryDirectory(prefix="legal_rag_eval_feedback_") as temp_feedback_dir:
+    with TemporaryDirectory(prefix="paralegal_eval_feedback_") as temp_feedback_dir:
         learning_result = _simulate_edit_learning(temp_feedback_dir, draft_result)
     report = {
         "retrieval": {

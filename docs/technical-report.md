@@ -23,10 +23,10 @@ The chosen output is a cited legal memo draft with sections for parties and docu
 
 | Area | Where it is handled |
 | --- | --- |
-| Document processing | `legal_rag.ingestion` extracts native text, routes OCR, records confidence and warnings, and writes normalized evidence blocks plus structured fields. |
-| Retrieval and grounding | `legal_rag.retrieval` builds sparse and vector indexes, fuses rankings, optionally reranks, and returns inspectable evidence ids. |
-| Draft generation | `legal_rag.generation` drafts a cited memo from retrieved evidence, sanitizes citations, validates grounding, and falls back safely when needed. |
-| Improvement from edits | `legal_rag.feedback` stores operator edits, classifies reusable changes, aggregates learned patterns, and feeds them into later drafts. |
+| Document processing | `paralegal.ingestion` extracts native text, routes OCR, records confidence and warnings, and writes normalized evidence blocks plus structured fields. |
+| Retrieval and grounding | `paralegal.retrieval` builds sparse and vector indexes, fuses rankings, optionally reranks, and returns inspectable evidence ids. |
+| Draft generation | `paralegal.generation` drafts a cited memo from retrieved evidence, sanitizes citations, validates grounding, and falls back safely when needed. |
+| Improvement from edits | `paralegal.feedback` stores operator edits, classifies reusable changes, aggregates learned patterns, and feeds them into later drafts. |
 | Code quality and design | The code is split into small modules for ingestion, retrieval, generation, feedback, providers, evaluation, and UI. Public functions and data models have docstrings. |
 | Documentation and clarity | `README.md`, `docs/developer-guide.md`, this report, sample outputs, screenshots, and tests document how to run and inspect the system. |
 
@@ -249,7 +249,7 @@ The current repo is a reference implementation of the workflow. The strongest pa
 Run the baseline:
 
 ```powershell
-venv\Scripts\python.exe -m legal_rag.cli all
+venv\Scripts\paralegal.exe all
 ```
 
 Run the tests:
